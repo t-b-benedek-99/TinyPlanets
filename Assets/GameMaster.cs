@@ -4,10 +4,12 @@ using UnityEngine;
 using UnityEngine.SceneManagement;
 using UnityEngine.UI;
 using TMPro;
+using System;
 
 public class GameMaster : MonoBehaviour
 {
     public TextMeshProUGUI score;
+    public TextMeshProUGUI highScore;
 
     public GameObject restartPanel;
     public GameObject winningPanel;
@@ -17,6 +19,7 @@ public class GameMaster : MonoBehaviour
     private bool hasToWait;
 
     private int i = 0;
+    private int currentHighestAchievedScore;
 
     bool isMute;
 
@@ -24,15 +27,19 @@ public class GameMaster : MonoBehaviour
 
     private void Start()
     {
-        if (PlayerPrefs.GetInt("sumPlanets") != null && PlayerPrefs.GetInt("sumPlanets") == 0)
+        if (highScore != null)
+        {
+            highScore.text = "High score: " + Convert.ToString(PlayerPrefs.GetInt("highScore"));
+        }
+        if (PlayerPrefs.GetInt("sumPlanets") == 0)
         {
             return;
         }
-        else if (PlayerPrefs.GetInt("sumPlanets") == 1)
+        else if (PlayerPrefs.GetInt("sumPlanets") == 1 && SceneManager.GetActiveScene().buildIndex != 0)
         {
             tinyPlanet5.SetActive(true);
             tinyPlanet6.SetActive(true);
-        } else if (PlayerPrefs.GetInt("sumPlanets") == 2)
+        } else if (PlayerPrefs.GetInt("sumPlanets") == 2 && SceneManager.GetActiveScene().buildIndex != 0)
         {
             tinyPlanet5.SetActive(true);
             tinyPlanet6.SetActive(true);
@@ -70,8 +77,27 @@ public class GameMaster : MonoBehaviour
             }
 
             i += 1;
-            score.text = i.ToString();
+            if (SceneManager.GetActiveScene().buildIndex == 4)
+            {
+                if (score != null)
+                    score.text = "Score: " + i.ToString();
+            }
+            else
+            {
+                if (score != null)
+                    score.text = i.ToString();
+            }
             hasToWait = false;
+        } else
+        {
+            if (score != null && highScore != null) {
+                if (Convert.ToInt32(score.text.Substring(7)) > PlayerPrefs.GetInt("highScore"))
+                {
+                    currentHighestAchievedScore = Convert.ToInt32(score.text.Substring(7));
+                    PlayerPrefs.SetInt("highScore", currentHighestAchievedScore);
+                    highScore.text = "High score: " + PlayerPrefs.GetInt("highScore");
+                }
+            }
         }
     }
 
@@ -131,10 +157,7 @@ public class GameMaster : MonoBehaviour
 
     public void SetDropDownEntry(TMP_Dropdown dropDown)
     {
-        if(PlayerPrefs.GetInt("sumPlanets") != null)
-        {
-            dropDown.value = PlayerPrefs.GetInt("sumPlanets");
-        }
+        dropDown.value = PlayerPrefs.GetInt("sumPlanets");
     }
 
     public void OnDropDownChanged(TMP_Dropdown dropDown)
